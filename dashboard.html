@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Raspadita VETTA — Panel de administración">
+  <title>Dashboard · Raspadita VETTA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+
+  <!-- TOP NAV -->
+  <nav class="dashboard-nav">
+    <div class="nav-brand">
+      <img
+        id="nav-logo-img"
+        class="nav-logo"
+        src="assets/logo.png"
+        alt="Logo"
+        onerror="this.style.display='none'; document.getElementById('nav-logo-fb').style.display='flex';"
+      >
+      <div id="nav-logo-fb" class="nav-logo-placeholder" style="display:none">🎰</div>
+      <div class="nav-text">
+        <div class="nav-title">Raspadita VETTA</div>
+        <div class="nav-subtitle">Panel de administración</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" id="btn-demo-card">🎴 Ver cartón demo</button>
+    </div>
+  </nav>
+
+  <!-- TABS -->
+  <div class="dashboard-tabs">
+    <button class="tab-btn active" data-tab="tab-prizes" id="tab-btn-prizes">
+      🏆 Premios <span class="tab-count" id="tc-prizes">0</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-generate" id="tab-btn-generate">
+      🎴 Generar cartones
+    </button>
+    <button class="tab-btn" data-tab="tab-cards" id="tab-btn-cards">
+      📋 Mis cartones <span class="tab-count" id="tc-cards">0</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-settings" id="tab-btn-settings">
+      ⚙️ Configuración
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="dashboard-content">
+
+    <!-- =====================================================
+         TAB: PREMIOS
+         ===================================================== -->
+    <div class="tab-panel active" id="tab-prizes">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-title">Gestión de premios</div>
+          <div class="section-subtitle">Agregá, editá o eliminá los premios disponibles para los cartones.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" id="btn-reset-prizes">↩️ Restaurar por defecto</button>
+          <button class="btn btn-primary" id="btn-add-prize">＋ Nuevo premio</button>
+        </div>
+      </div>
+
+      <!-- Warning si hay menos de 9 premios -->
+      <div id="prizes-warning" style="display:none" class="surface" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);">
+        <p style="font-size:0.82rem;color:#EF4444;">
+          ⚠️ Necesitás al menos <strong>9 premios</strong> para poder generar cartones.
+        </p>
+      </div>
+
+      <!-- Lista de premios -->
+      <div class="surface">
+        <div class="surface-title">🎁 Lista de premios (<span id="prize-count">0</span>)</div>
+        <div class="prize-list" id="prize-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">🎁</div>
+            <div class="empty-state-text">Cargando premios...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         TAB: GENERAR
+         ===================================================== -->
+    <div class="tab-panel" id="tab-generate">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-title">Generador de cartones</div>
+          <div class="section-subtitle">Cada cartón tiene 9 premios únicos en orden aleatorio. El link se puede compartir directamente.</div>
+        </div>
+      </div>
+
+      <div class="surface">
+        <div class="surface-title">⚙️ Configurar generación</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="generate-qty">Cantidad de cartones</label>
+            <input class="form-input" type="number" id="generate-qty" min="1" max="500" value="1" placeholder="Ej: 10">
+            <div class="form-hint">Máximo 500 por vez.</div>
+          </div>
+        </div>
+
+        <div id="gen-warning" style="display:none;margin-bottom:14px;padding:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;">
+          <p style="font-size:0.82rem;color:#EF4444;">⚠️ Necesitás al menos 9 premios para generar cartones. <button class="btn btn-ghost btn-sm" onclick="document.querySelector('[data-tab=tab-prizes]').click() || document.getElementById('tab-btn-prizes').click()">Ir a Premios →</button></p>
+        </div>
+
+        <button class="btn btn-primary" id="btn-generate" style="width:100%;justify-content:center;padding:14px;">
+          ✨ Generar cartones
+        </button>
+      </div>
+
+      <div class="surface">
+        <div class="surface-title" style="margin-bottom:8px;">ℹ️ ¿Cómo funciona?</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+          <li style="font-size:0.82rem;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:1rem;flex-shrink:0;">1️⃣</span>
+            Configurá tus premios en la pestaña <strong style="color:var(--text-primary)">Premios</strong>.
+          </li>
+          <li style="font-size:0.82rem;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:1rem;flex-shrink:0;">2️⃣</span>
+            Configurá la URL base de tu GitHub Pages en <strong style="color:var(--text-primary)">Configuración</strong> (opcional pero recomendado).
+          </li>
+          <li style="font-size:0.82rem;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:1rem;flex-shrink:0;">3️⃣</span>
+            Generá la cantidad de cartones que necesitás. Cada uno tiene un ID único y los premios en orden aleatorio.
+          </li>
+          <li style="font-size:0.82rem;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:1rem;flex-shrink:0;">4️⃣</span>
+            Copiá cada link y compartilo con tu cliente. Cada link funciona <strong style="color:var(--gold)">una única vez</strong>.
+          </li>
+          <li style="font-size:0.82rem;color:var(--text-secondary);display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:1rem;flex-shrink:0;">5️⃣</span>
+            El cliente raspa, ve su premio y te manda una captura de pantalla para canjear.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         TAB: MIS CARTONES
+         ===================================================== -->
+    <div class="tab-panel" id="tab-cards">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-title">Cartones generados</div>
+          <div class="section-subtitle">Total: <strong id="total-cards-label">0</strong> cartones. Los más recientes aparecen primero.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" id="btn-export-links">📋 Copiar todos</button>
+          <button class="btn btn-danger btn-sm" id="btn-clear-cards">🗑️ Borrar todos</button>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="stats-grid" style="margin-bottom:16px;">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Cartones generados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-prizes">0</div>
+          <div class="stat-label">Premios disponibles</div>
+        </div>
+      </div>
+
+      <div class="surface">
+        <div class="generated-list" id="generated-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">🎴</div>
+            <div class="empty-state-text">Todavía no generaste ningún cartón.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         TAB: CONFIGURACIÓN
+         ===================================================== -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-title">Configuración</div>
+          <div class="section-subtitle">Ajustá las opciones globales de la app.</div>
+        </div>
+      </div>
+
+      <!-- Logo -->
+      <div class="surface">
+        <div class="surface-title">🖼️ Logo de la marca</div>
+        <label class="logo-drop" for="logo-file" id="logo-drop-area">
+          <input type="file" id="logo-file" accept="image/*">
+          <img class="logo-preview-img" id="logo-preview" src="" alt="Logo actual" style="display:none">
+          <div id="logo-drop-placeholder">
+            <div class="logo-drop-icon">📁</div>
+            <div class="logo-drop-text">Hacé click para subir tu logo</div>
+            <div class="logo-drop-hint">PNG, JPG o SVG · Se guarda localmente</div>
+          </div>
+        </label>
+        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:10px;">
+          ⚠️ El logo se guarda en este navegador. Para que aparezca en los cartones que abrís en otro dispositivo, colocá el archivo <code>assets/logo.png</code> en el repositorio de GitHub.
+        </p>
+      </div>
+
+      <!-- URL base -->
+      <div class="surface">
+        <div class="surface-title">🔗 URL base (GitHub Pages)</div>
+        <div class="form-group">
+          <label class="form-label" for="base-url-input">URL raíz de tu sitio</label>
+          <input
+            class="form-input"
+            type="url"
+            id="base-url-input"
+            placeholder="https://usuario.github.io/raspadita"
+          >
+          <div class="form-hint">
+            Los links de los cartones apuntarán a esta URL. Dejalo vacío para usar la URL actual del navegador.
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-save-url">💾 Guardar URL</button>
+      </div>
+
+      <!-- Zona peligrosa -->
+      <div class="surface" style="border-color:rgba(239,68,68,0.2);">
+        <div class="surface-title" style="color:var(--error);">⚠️ Zona peligrosa</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Borrar todos los cartones</div>
+            <div class="settings-row-desc">Elimina el historial de cartones generados. Los links existentes seguirán siendo válidos.</div>
+          </div>
+          <button class="btn btn-danger btn-sm" id="btn-clear-all">🗑️ Borrar</button>
+        </div>
+        <div class="settings-row" style="margin-top:8px;">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Restaurar premios por defecto</div>
+            <div class="settings-row-desc">Reemplaza tu lista de premios con los valores originales de fábrica.</div>
+          </div>
+          <button class="btn btn-danger btn-sm" id="btn-reset-prizes-settings">↩️ Restaurar</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard-content -->
+
+  <!-- =====================================================
+       PRIZE FORM MODAL (overlay)
+       ===================================================== -->
+  <div class="form-overlay" id="prize-form-overlay" style="display:none;">
+    <div class="form-modal">
+      <div class="form-modal-title" id="prize-form-title">Nuevo Premio</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prize-name">Nombre del premio</label>
+          <input class="form-input" type="text" id="prize-name" placeholder="Ej: Gran Premio" maxlength="40">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prize-type">Tipo</label>
+          <select class="form-select" id="prize-type">
+            <option value="efectivo">💵 Efectivo</option>
+            <option value="descuento">🏷️ Descuento</option>
+            <option value="objeto">🎁 Objeto / Regalo</option>
+            <option value="especial">⭐ Especial</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="prize-value">Descripción / Valor</label>
+        <input class="form-input" type="text" id="prize-value" placeholder="Ej: $50.000 en efectivo" maxlength="80">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Ícono</label>
+        <div class="emoji-grid" id="emoji-grid"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <input class="form-input" type="text" id="custom-emoji" placeholder="Otro emoji..." style="max-width:120px;" maxlength="4">
+          <span style="font-size:0.75rem;color:var(--text-muted);">← Escribí cualquier emoji</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" id="btn-cancel-prize">Cancelar</button>
+        <button class="btn btn-primary" id="btn-save-prize">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast global -->
+  <div class="toast" id="global-toast"></div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
