@@ -5,12 +5,18 @@
   'use strict';
 
   /* ----------------------------------------------------------
-     BASE64 UNICODE-SAFE
-     btoa() falla con emojis (fuera de Latin-1).
-     Usamos encodeURIComponent para convertir a bytes ASCII primero.
+     CODIFICACIÓN DEL PAYLOAD
+     Usamos lz-string para comprimir el JSON antes de codificarlo.
+     Reduce el link de ~1200 a ~400-500 caracteres.
+     Fallback a base64 puro si lz-string no está disponible.
   ---------------------------------------------------------- */
-  function b64Encode(str) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+  function encodePayload(obj) {
+    const json = JSON.stringify(obj);
+    if (typeof LZString !== 'undefined') {
+      return 'lz:' + LZString.compressToEncodedURIComponent(json);
+    }
+    // fallback: base64 unicode-safe
+    return btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g,
       (_, hex) => String.fromCharCode(parseInt(hex, 16))));
   }
 
@@ -118,9 +124,7 @@
   function buildCardUrl(card) {
     const base = getBaseUrl();
     const cardUrl = base + '/index.html';
-    const payload = b64Encode(JSON.stringify({ id: card.id, prizes: card.prizes, issued: card.issued }));
-    // IMPORTANTE: encodeURIComponent en el payload para que los '+' de base64
-    // no sean interpretados como espacios por URLSearchParams en el cartón.
+    const payload = encodePayload({ id: card.id, prizes: card.prizes, issued: card.issued });
     return `${cardUrl}?card=${encodeURIComponent(card.id)}&p=${encodeURIComponent(payload)}`;
   }
 
@@ -424,8 +428,117 @@
   function renderStats() {
     const se = document.getElementById('stat-total');
     const sp = document.getElementById('stat-prizes');
+    const ri = document.getElementById('rpt-issued');
     if (se) se.textContent = cards.length;
     if (sp) sp.textContent = prizes.length;
+    if (ri) ri.textContent = cards.length;
+  }
+
+  /* ----------------------------------------------------------
+     REPORTES — Firebase Realtime Database
+  ---------------------------------------------------------- */
+  let reportsListener = null;
+
+  function initReports() {
+    const btnRefresh = document.getElementById('btn-refresh-reports');
+    if (btnRefresh) btnRefresh.addEventListener('click', loadReports);
+
+    // Cargar cuando se abre la pestaña
+    document.getElementById('tab-btn-reports').addEventListener('click', loadReports);
+  }
+
+  function loadReports() {
+    const db = window.__firebaseDB;
+    const noFb = document.getElementById('rpt-no-firebase');
+    const loading = document.getElementById('rpt-loading');
+    const list = document.getElementById('rpt-list');
+    const empty = document.getElementById('rpt-empty');
+
+    if (!db) {
+      // Firebase no conectado todavía — esperar el evento
+      if (noFb) noFb.style.display = 'block';
+      if (loading) loading.style.display = 'none';
+      document.addEventListener('firebase:ready', loadReports, { once: true });
+      return;
+    }
+
+    if (noFb) noFb.style.display = 'none';
+    if (loading) loading.style.display = 'block';
+    if (list)  list.style.display = 'none';
+    if (empty) empty.style.display = 'none';
+
+    // Detach listener anterior si existía
+    if (reportsListener) {
+      db.ref('used_cards').off('value', reportsListener);
+    }
+
+    reportsListener = db.ref('used_cards').on('value', (snapshot) => {
+      const data = snapshot.val() || {};
+      const usedIds = Object.keys(data);
+      const usedCount = usedIds.length;
+      const issuedCount = cards.length;
+      const pct = issuedCount > 0 ? Math.round((usedCount / issuedCount) * 100) : 0;
+
+      // Actualizar stats
+      const elUsed = document.getElementById('rpt-used');
+      const elIssued = document.getElementById('rpt-issued');
+      const elPct = document.getElementById('rpt-pct');
+      if (elUsed)   elUsed.textContent   = usedCount;
+      if (elIssued) elIssued.textContent = issuedCount;
+      if (elPct)    elPct.textContent    = issuedCount > 0 ? pct + '%' : '—';
+
+      if (loading) loading.style.display = 'none';
+
+      if (usedCount === 0) {
+        if (empty) empty.style.display = 'block';
+        if (list)  list.style.display  = 'none';
+        return;
+      }
+
+      if (empty) empty.style.display = 'none';
+      if (list)  list.style.display  = 'block';
+
+      // Construir tabla
+      const cardMap = {};
+      cards.forEach(c => cardMap[c.id] = c);
+
+      // Ordenar por timestamp descendente (si existe) o alfabéticamente
+      const sorted = usedIds.sort((a, b) => {
+        const ta = data[a] && data[a].ts ? data[a].ts : 0;
+        const tb = data[b] && data[b].ts ? data[b].ts : 0;
+        return tb - ta;
+      });
+
+      list.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="color:var(--text-muted);text-align:left;border-bottom:1px solid rgba(255,255,255,0.06);">
+              <th style="padding:8px 12px;">ID Cartón</th>
+              <th style="padding:8px 12px;">Raspado el</th>
+              <th style="padding:8px 12px;">Emitido el</th>
+              <th style="padding:8px 12px;text-align:center;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(id => {
+              const entry   = data[id];
+              const issued  = cardMap[id];
+              const usedAt  = entry && entry.ts ? formatDate(entry.ts) : '—';
+              const issuedAt = issued ? formatDate(issued.issued) : '<span style="color:var(--text-muted)">Externo</span>';
+              return `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <td style="padding:10px 12px;font-family:monospace;color:var(--gold);">${esc(id)}</td>
+                  <td style="padding:10px 12px;">${usedAt}</td>
+                  <td style="padding:10px 12px;">${issuedAt}</td>
+                  <td style="padding:10px 12px;text-align:center;">✅ Usado</td>
+                </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+    }, (err) => {
+      console.error('Firebase reports error:', err);
+      if (loading) loading.textContent = '❌ Error al leer Firebase: ' + err.message;
+    });
   }
 
   /* ----------------------------------------------------------
@@ -510,6 +623,7 @@
     renderCardList();
     renderStats();
     renderSettings();
+    initReports();
 
     // Prize form buttons
     document.getElementById('btn-add-prize').addEventListener('click', () => openPrizeForm(null));

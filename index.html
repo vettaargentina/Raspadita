@@ -27,48 +27,11 @@
   <!-- Confetti container -->
   <div id="confetti-container"></div>
 
-  <!--
-    Firebase anti-cheat — control global de cartones usados.
-    La API Key web de Firebase es pública por diseño (google.com/support/firebase/answer/6400716).
-    La seguridad real la dan las Reglas de Seguridad de la Database (".write": "!data.exists()").
-  -->
-  <script>
-    window.FIREBASE_CONFIG = {
-      apiKey:            "AIzaSyAjmqWanmhiEGR4M0NwP5fbth7hfOBvwqg",
-      authDomain:        "studio-3802717013-d03a3.firebaseapp.com",
-      databaseURL:       "https://studio-3802717013-d03a3-default-rtdb.firebaseio.com",
-      projectId:         "studio-3802717013-d03a3",
-      storageBucket:     "studio-3802717013-d03a3.firebasestorage.app",
-      messagingSenderId: "850472532831",
-      appId:             "1:850472532831:web:f3bbd43cab23456fd0d4ea",
-    };
-  </script>
-  <script>
-    (function () {
-      var cfg = window.FIREBASE_CONFIG;
-      if (!cfg || !cfg.databaseURL) return;
+  <!-- Firebase: config + init central. Ver firebase-init.js -->
+  <script src="firebase-init.js"></script>
 
-      function loadScript(src, onload) {
-        var s = document.createElement('script');
-        s.src = src; s.onload = onload;
-        document.head.appendChild(s);
-      }
-
-      var CDN = 'https://www.gstatic.com/firebasejs/10.7.1/';
-      loadScript(CDN + 'firebase-app-compat.js', function () {
-        loadScript(CDN + 'firebase-database-compat.js', function () {
-          try {
-            firebase.initializeApp(cfg);
-            window.__firebaseDB = firebase.database();
-            console.log('✅ Firebase conectado — control global de cartones activo');
-          } catch (e) {
-            console.warn('Firebase init failed:', e.message);
-          }
-        });
-      });
-    })();
-  </script>
-
+  <!-- lz-string: decodificación de links comprimidos -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
   <script src="card.js"></script>
 </body>
 

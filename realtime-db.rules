@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "used_cards": {
+      "$cardId": {
+        ".read":  true,
+        ".write": "!data.exists()"
+      }
+    }
+  }
+}

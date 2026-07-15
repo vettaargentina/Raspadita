@@ -52,13 +52,23 @@
   /* ----------------------------------------------------------
      URL PARSING
   ---------------------------------------------------------- */
+  function decodePayload(encoded) {
+    // Formato nuevo: prefijo 'lz:' + lz-string
+    if (encoded.startsWith('lz:')) {
+      if (typeof LZString === 'undefined') throw new Error('lz-string not loaded');
+      return JSON.parse(LZString.decompressFromEncodedURIComponent(encoded.slice(3)));
+    }
+    // Formato legacy: base64 unicode-safe
+    return JSON.parse(b64Decode(encoded));
+  }
+
   function getCardData() {
     const params  = new URLSearchParams(window.location.search);
     const cardId  = params.get('card');
     const encoded = params.get('p');
     if (!cardId || !encoded) return null;
     try {
-      const data = JSON.parse(b64Decode(encoded));
+      const data = decodePayload(encoded);
       if (!data.id || !Array.isArray(data.prizes) || data.prizes.length < 9) return null;
       return data;
     } catch { return null; }
@@ -69,8 +79,7 @@
      Si firebase-config.js no está cargado, cae a localStorage.
   ---------------------------------------------------------- */
   function getFirebaseDB() {
-    // window.__firebaseDB es inicializado por index.html si
-    // firebase-config.js existe y las SDKs se cargaron.
+    // window.__firebaseDB es inicializado por firebase-init.js
     return window.__firebaseDB || null;
   }
 

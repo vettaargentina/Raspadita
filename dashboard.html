@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Firebase: config + init central -->
+  <script src="firebase-init.js"></script>
+  <!-- lz-string: compresión de links de cartones -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 </head>
 <body class="dashboard-page">
 
@@ -43,6 +47,9 @@
     </button>
     <button class="tab-btn" data-tab="tab-cards" id="tab-btn-cards">
       📋 Mis cartones <span class="tab-count" id="tc-cards">0</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-reports" id="tab-btn-reports">
+      📊 Reportes
     </button>
     <button class="tab-btn" data-tab="tab-settings" id="tab-btn-settings">
       ⚙️ Configuración
@@ -176,6 +183,51 @@
             <div class="empty-state-icon">🎴</div>
             <div class="empty-state-text">Todavía no generaste ningún cartón.</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         TAB: REPORTES
+         ===================================================== -->
+    <div class="tab-panel" id="tab-reports">
+      <div class="section-head">
+        <div class="section-head-text">
+          <div class="section-title">Reportes de uso</div>
+          <div class="section-subtitle">Cartones raspados registrados en Firebase Realtime Database.</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-refresh-reports">🔄 Actualizar</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:16px;" id="reports-stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="rpt-used">—</div>
+          <div class="stat-label">Raspados (Firebase)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="rpt-issued">0</div>
+          <div class="stat-label">Generados (local)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="rpt-pct">—</div>
+          <div class="stat-label">% Uso</div>
+        </div>
+      </div>
+
+      <!-- Estado Firebase -->
+      <div id="rpt-no-firebase" class="surface" style="display:none;border-color:rgba(239,68,68,0.25);">
+        <p style="font-size:0.85rem;color:#EF4444;">⚠️ Firebase no está conectado. Verificá tu conexión o la configuración en <code>firebase-init.js</code>.</p>
+      </div>
+
+      <!-- Tabla de raspados -->
+      <div class="surface" id="rpt-table-wrap">
+        <div class="surface-title">🎴 Cartones raspados</div>
+        <div id="rpt-loading" style="text-align:center;padding:32px;color:var(--text-muted);font-size:0.85rem;">Conectando con Firebase…</div>
+        <div id="rpt-list" style="display:none;"></div>
+        <div id="rpt-empty" style="display:none;" class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-text">Ningún cartón fue raspado todavía.</div>
         </div>
       </div>
     </div>
